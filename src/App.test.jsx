@@ -3,17 +3,15 @@
 
 import { screen, render } from '@testing-library/react';
 // 🚨
-// import rest
 import { rest } from 'msw';
-import { setUpServer } from 'msw/node';
-// import setupServer
+import { setupServer } from 'msw/node';
 import App from './App';
 
 const user = {
   id: 1,
   created_at: '2021-12-13T00:17:29+00:00',
   // 🚨 Add a name here
-  name: '',
+  name: 'Brenden',
   avatar: 'https://thumbs.gfycat.com/NiceRequiredGrunion-size_restricted.gif',
   header:
     'https://static.wikia.nocookie.net/naruto/images/5/50/Team_Kakashi.png',
@@ -30,12 +28,26 @@ const user = {
 };
 
 // 🚨 Create your server
+const server = setupServer(
+  rest.get(
+    `${process.env.REACT_APP_SUPABASE_URL}/rest/v1/users?select=*`,
+    (req, res, ctx) => res(ctx.json(user))
+  ),
+  rest.get(
+    `${process.env.REACT_APP_SUPABASE_URL}/rest/v1/users?select=*`,
+    (req, res, ctx) => {
+      const { id } = req.params;
+      console.log('test for ID, does it work?', id);
+      return res(ctx.json(user));
+    }
+  )
+);
 
 // 🚨 Listen for server start
-beforeAll();
+beforeAll(() => server.listen());
 
 // 🚨 Close server when complete
-afterAll();
+afterAll(() => server.close);
 
 test('Should render the header', async () => {
   render(<App />);
